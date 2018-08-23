@@ -40,12 +40,12 @@ def ProcessData():
                 return k
 
     print('Reading Files...')
-    for fin in glob.glob('/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Data/RawData/*.xlsx'):
+    for fin in glob.glob('Resources/RawData/*.xlsx'):
         print(fin)
         FullMx = pd.concat([Read_Qxls(fin), FullMx])
 
     FullMx['Zip Code'] = FullMx['Zip Code'].astype('str').str[:5]
-    FullMx.to_pickle('/Users/jamestamerius/Dropbox/Documents/Projects/Qflu2017_2018season/Qflu_raw')
+    FullMx.to_pickle('Resources/ProcessedData/Qflu_raw')
 
     ############# REMOVE DATA WITH POSITVE FLU_A AND FLU_B ####################
     print('Filtering Data...')
@@ -65,8 +65,7 @@ def ProcessData():
 
     ############# ZIPCODE -- LAT/LON LOOKUP ##########################################
     print('Matching Lat/Lon with Zip Codes...')
-    Zip2LatLon = pd.read_csv(
-        '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Data/ZipCode2LatLon.csv')
+    Zip2LatLon = pd.read_csv('Resources/ZipCode2LatLon.csv')
     Zip2LatLon.columns = ['Zip Code', 'Lat', 'Lon']
     FullMx_prime['Zip Code'] = FullMx_prime['Zip Code'].astype(float).astype(int)
 
@@ -94,8 +93,7 @@ def ProcessData():
     QFlu_prime['TotPos'] = QFlu_prime['Pos_A'] + QFlu_prime['Pos_B']
     QFlu_prime['TestDate'] = pd.to_datetime(QFlu_prime.TestDate)
 
-    QFlu_prime.to_csv('/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Data/QFlu_processed_I.csv',
-                      index=False)
+    QFlu_prime.to_csv('Resources/ProcessedData/QFlu_processed_I.csv',index=False)
 
     ###################### Smooth signal
     print('Smoothing signal...')
@@ -128,14 +126,14 @@ def ProcessData():
 
     # save to csv
     print('Saving to csv...')
-    QFlu_processed.to_csv(
-        '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Data/QFlu_processed_II.csv', index=False)
+    fname = 'Resources/ProcessedData/QFlu_processed_II.csv'
+    QFlu_processed.to_csv(fname, index=False)
 
 def MkRunner(ST, date0, date1, abs_prc):
     # date is first date in yyyy-mm-dd
     date0 = pd.to_datetime(date0)
     date1 = pd.to_datetime(date1)
-    fname = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Data/QFlu_processed_II.csv'
+    fname = 'Resources/ProcessedData/QFlu_processed_II.csv'
     df = pd.read_csv(fname)
     df.TestDate = pd.to_datetime(df.TestDate)
     if ST != 'US':
@@ -161,11 +159,11 @@ def MkRunner(ST, date0, date1, abs_prc):
     ax.fill_between(np.arange(len(PosA)), 0, PosB, color='blue', alpha='0.75', linewidth=.25)
     plt.axis('off')
 
-    directory = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ST+'/Runners/'
+    directory = 'Figures/'+ST+'/Runners/'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    fname = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ST+'/Runners/Runner.png'
+    fname = 'Figures/'+ST+'/Runners/Runner.png'
     fig.savefig(fname,transparent=True, bbox_inches='tight', pad_inches=0, dpi=600)
     img = Image.open(fname)
 
@@ -192,7 +190,7 @@ def MkMap(ST,start_date,end_date):
                     resolution='l', lon_0=-96, lat_0=40, projection='aea' \
                     , ellps='GRS80', area_thresh=10000, lat_1=20, lat_2=60)
 
-        fname_ST = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/QGIS/Qflu_QGIS_shpfiles/cb_2016_us_state_500k/cb_2016_us_state_500k'
+        fname_ST = 'Resources/GIS_data/cb_2016_us_state_500k/cb_2016_us_state_500k.shp'
         m.readshapefile(fname_ST, 'states', drawbounds=False)
         patches = []
         for info, shape in zip(m.states, m.states):
@@ -232,7 +230,7 @@ def MkMap(ST,start_date,end_date):
     if ST != 'US':# Make urban areas background
 
         # Make US background
-        fname_US = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Mapping/cb_2016_us_state_500k/cb_2016_us_state_500k'
+        fname_US = 'Resources/GIS_data/cb_2016_us_state_500k/cb_2016_us_state_500k.shp'
         m.readshapefile(fname_US, 'states', drawbounds=False)
         patches_all_ST = []
         patches_ST = []
@@ -244,7 +242,7 @@ def MkMap(ST,start_date,end_date):
         ax.add_collection(PatchCollection(patches_all_ST, facecolor='#C6C6C6', edgecolor='#F5F5F5', linewidths=.5, zorder=0))
         ax.add_collection(PatchCollection(patches_ST, facecolor='#EEEEEE', edgecolor='w', linewidths=2, zorder=0))
 
-        fname_UA = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Mapping/cb_2016_us_ua10_500k/cb_2016_us_ua10_500k'
+        fname_UA = 'Resources/GIS_data/cb_2016_us_ua10_500k/cb_2016_us_ua10_500k.shp'
         m.readshapefile(fname_UA, 'UA', drawbounds=False)
         patches = []
         for info, shape in zip(m.UA, m.UA):
@@ -252,7 +250,7 @@ def MkMap(ST,start_date,end_date):
         ax.add_collection(PatchCollection(patches, facecolor='#D7D7D7', edgecolor=None, linewidths=.5, zorder=1))
 
         # Plot roads
-        fname_rds = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Mapping/MajorRoadsUS/MajorRoadsUS'
+        fname_rds = 'Resources/GIS_data/MajorRoadsUS/MajorRoadsUS.shp'
         m.readshapefile(fname_rds, 'roads', drawbounds=False)
         for info, shape in zip(m.roads, m.roads):
             xx, yy = zip(*shape)
@@ -262,22 +260,22 @@ def MkMap(ST,start_date,end_date):
     ax.axis('off')
 
     # import Qflu data
-    fname = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Data/QFlu_processed_II.csv'
+    fname = 'Resources/ProcessedData/QFlu_processed_II.csv'
     Qflu = pd.read_csv(fname)
     Qflu.TestDate = pd.to_datetime(Qflu.TestDate)
     Qflu = Qflu[(Qflu['TestDate'] > pd.to_datetime(start_date)) & (Qflu['TestDate'] <= pd.to_datetime(end_date))]
     Qflu = Qflu.sort_values('TestDate')
 
     # define the color map
-    cmap = pd.read_csv('/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Resources/cmap.csv')
+    cmap = pd.read_csv('Resources/cmap.csv')
     cmap = cmap.as_matrix()
     cm = mpl.colors.ListedColormap(cmap / 255.0)
 
     # begin for loop
     cnt = 1
 
-    directory = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ ST + '/Figs_I'
-    directory2 = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ ST + '/Figs_II'
+    directory = 'Figures/'+ ST + '/Figs_I'
+    directory2 = 'Figures/'+ ST + '/Figs_II'
 
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -294,21 +292,21 @@ def MkMap(ST,start_date,end_date):
         Total = df['TotPos'].as_matrix()
         AB = df['A_to_B'].as_matrix()
         points = m.scatter(Lon, Lat, latlon=True, s=Total * 15, cmap=cm, c=AB, alpha=0.8, marker="o", linewidth=.25)
-        f = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ ST + '/Figs_I/Fig' + d + '.png'
+        f = 'Figures/'+ ST + '/Figs_I/Fig' + d + '.png'
         plt.savefig(f, dpi=600, bbox_inches='tight')
         points.remove()
         cnt = cnt + 1
 
 def AddRunner2Map(ST,min_value, max_value, w_bar,start_day):
     # Get filenames
-    filenames = sorted(glob.glob('/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ST+'/Figs_I/*.png'))
+    filenames = sorted(glob.glob('Figures/'+ST+'/Figs_I/*.png'))
     print(filenames)
 
     # open images
-    legend = Image.open('/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Legends/Legend_15.png').convert(
+    legend = Image.open('Legends/Legend_15.png').convert(
         "RGBA")
 
-    rnnr_fname = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ST+'/Runners/Runner.png'
+    rnnr_fname = 'Figures/'+ST+'/Runners/Runner.png'
 
     barPlot = Image.open(rnnr_fname).convert("RGBA")
 
@@ -451,13 +449,13 @@ def AddRunner2Map(ST,min_value, max_value, w_bar,start_day):
         source_img.save(filename, "png")
 
 def MkVideo(ST, start_date, end_date, speed):
-    directory = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/'+ST+'/Figs_II/'
+    directory = 'Figures/'+ST+'/Figs_II/'
     if not os.path.exists(directory):
         os.makedirs(directory)
 
     os.chdir(directory)
 
-    directory2 = '/Users/jamestamerius/Dropbox/Documents/Projects/QuidelData/Python/Figures/' + ST + '/Video'
+    directory2 = 'Figures/' + ST + '/Video'
 
     if not os.path.exists(directory2):
         os.makedirs(directory2)
@@ -467,14 +465,7 @@ def MkVideo(ST, start_date, end_date, speed):
 
 
     os.system(mpeg_command)
-    #os.system("ffmpeg -framerate 18 -f image2 -start_number 1 -i fig%4d.png -f mp4 -vcodec libx264 -pix_fmt yuv420p tmp.mp4")
-    # os.system('ffmpeg -i tmp.mp4 -r 25 -f mpeg -vcodec mpeg1video -ar 48000 -b:v 5000k -b:a 128k -ar 44100 -ac 1 -y OUTFILE.mpg')
 
-    #os.system("ffmpeg -framerate 18  -start_number 1 -i fig%4d.png -b:v 2M -vcodec msmpeg4 tmp.wmv")
-
-    # f1 = directory + 'tmp.mp4'
-    # os.remove(f1)
-    # f2 = directory2 + '/' + start_date[0:4] + '-' + end_date[0:4] + '_' + ST + '.mp4
 
     f1 = directory + 'tmp.mp4'
     f2 = directory2 + '/' + start_date[0:4] + '-' + end_date[0:4] + '_' + ST + '.mp4'
@@ -483,26 +474,3 @@ def MkVideo(ST, start_date, end_date, speed):
 
 
 
-
-
-#ProcessData()
-
-
-speed = 10 ###slow = 12, fast 25
-states = ['FL','GA','TX']
-start_date = '2017-8-1'
-end_date = '2018-8-1'
-for ST in states:
-    [a, b] = MkRunner(ST, start_date, end_date, 'abs')
-    MkMap(ST, start_date, end_date)
-    AddRunner2Map(ST, 0, int(a), 3000, start_date)
-    MkVideo(ST, start_date, end_date,speed)
-
-
-# print('State: ' + ST)
-# print('start_date: ' + start_date)
-# print('end_date: ' + end_date)
-#
-# [a,b] = MkRunner(ST, start_date, end_date, 'abs')
-# MkMap(ST,start_date, end_date)
-# AddRunner2Map(ST,0, int(a), 3000, start_date)
